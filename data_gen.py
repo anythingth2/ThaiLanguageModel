@@ -11,6 +11,7 @@ with open('character_copus.txt', 'r', encoding='utf-8') as f:
     CHAR_CORPUS = f.read().replace('\n', '')
     CHAR_CORPUS = ''.join(sorted(list(set(CHAR_CORPUS))))
 CHAR_DICT = {char: i for i, char in enumerate(CHAR_CORPUS)}
+CHAR_DICT['$'] = len(CHAR_DICT)
 NUM_VOCAB = len(CHAR_DICT)
 
 
@@ -19,14 +20,14 @@ def tokenize(text):
 
 
 # %%
-def random_space(p=0.01):
+def random_blank(p=0.01):
 
     def func(text):
         idxs = np.random.choice(np.arange(len(text)),
                                 int(p*len(text)), replace=False)
         text = list(text)
         for i in idxs:
-            text[i] = ' '
+            text[i] = '$'
         text = ''.join(text)
         return text
     return func
