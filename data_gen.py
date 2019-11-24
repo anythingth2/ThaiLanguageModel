@@ -39,21 +39,15 @@ def sentence_generator(input_dir, length, batch_size, adversarial=None):
     scrap_sentences = []
     for input_path in input_paths:
         with open(input_path, 'r', encoding='utf-8') as f:
-            wiki_jsons = ujson.load(f)
-        texts = [blog['text'] for blog in wiki_jsons]
-        full_text = ''.join(texts)
-        full_text = full_text.replace('\n', ' ').replace('  ', ' ')
-        full_text = re.sub(f'[^{CHAR_CORPUS}]', '', full_text)
-        full_text = full_text.replace(' ', '')
-
-        words = word_tokenize(full_text, engine='mm')
-
+            wiki_word_jsons = ujson.load(f)
+        words = wiki_word_jsons['words']
         sentences = [] + scrap_sentences
 
         text = ''
-        while len(words) > 1:
-            if len(text + words[0]) < length-2:
-                text += words.pop(0)
+
+        for word in words:
+            if len(text + word) < length-2:
+                text += word
             else:
                 sentences.append(text)
                 text = ''
