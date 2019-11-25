@@ -41,7 +41,10 @@ def random_blank(p=0.01):
 
 def encode_text(text, fix_length=None):
     if fix_length is not None:
-        text = text + ' '*(fix_length-len(text))
+        if len(text) < fix_length:
+            text = text + ' '*(fix_length-len(text))
+        else:
+            text = text[:fix_length]
     tokens = tokenize(text)
     return np.array([to_categorical(s, NUM_VOCAB) for s in tokens])
 
@@ -97,7 +100,7 @@ def sentence_generator(input_dir, length, batch_size, adversarial=None):
 #                          adversarial=random_space(0.02))
 # # %%
 # X,Y = next(gen)
-#%%
+# %%
 
 
 # %%
