@@ -12,6 +12,7 @@ with open('character_copus.txt', 'r', encoding='utf-8') as f:
     CHAR_CORPUS = ''.join(sorted(list(set(CHAR_CORPUS))))
 CHAR_DICT = {char: i for i, char in enumerate(CHAR_CORPUS)}
 CHAR_DICT['$'] = len(CHAR_DICT)
+REVERSED_CHAR_DICT = {i: char for char, i in CHAR_DICT.items()}
 NUM_VOCAB = len(CHAR_DICT)
 
 
@@ -19,7 +20,12 @@ def tokenize(text):
     return [CHAR_DICT[c] for c in text]
 
 
+def detokenize(tokens):
+
+    return ''.join([REVERSED_CHAR_DICT[t] for t in tokens])
 # %%
+
+
 def random_blank(p=0.01):
 
     def func(text):
@@ -31,6 +37,18 @@ def random_blank(p=0.01):
         text = ''.join(text)
         return text
     return func
+
+
+def encode_text(text, fix_length=None):
+    if fix_length is not None:
+        text = text + ' '*(fix_length-len(text))
+    tokens = tokenize(text)
+    return np.array([to_categorical(s, NUM_VOCAB) for s in tokens])
+
+
+def decode_text(encoded_text):
+    tokens = encoded_text.argmax(axis=1)
+    return detokenize(tokens)
 
 
 def sentence_generator(input_dir, length, batch_size, adversarial=None):
@@ -59,9 +77,9 @@ def sentence_generator(input_dir, length, batch_size, adversarial=None):
                     adversarial(s) for s in original_sentences]
 
                 original_sentences = np.array([tokenize(s+' '*(length - len(s)))
-                                            for s in original_sentences])
+                                               for s in original_sentences])
                 adversarial_sentences = np.array([tokenize(s+' '*(length - len(s)))
-                                                for s in adversarial_sentences])
+                                                  for s in adversarial_sentences])
 
                 original_sentences = np.array(
                     [to_categorical(s, NUM_VOCAB) for s in original_sentences])
@@ -79,3 +97,7 @@ def sentence_generator(input_dir, length, batch_size, adversarial=None):
 #                          adversarial=random_space(0.02))
 # # %%
 # X,Y = next(gen)
+#%%
+
+
+# %%
