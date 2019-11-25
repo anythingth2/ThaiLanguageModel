@@ -37,32 +37,38 @@ def sentence_generator(input_dir, length, batch_size, adversarial=None):
     input_paths = list(input_dir.glob('**/wiki_*.json'))
 
     scrap_sentences = []
-    for input_path in input_paths:
-        with open(input_path, 'r', encoding='utf-8') as f:
-            wiki_word_jsons = ujson.load(f)
-        words = wiki_word_jsons['words']
-        sentences = [] + scrap_sentences
+    while True:
+        for input_path in input_paths:
+            with open(input_path, 'r', encoding='utf-8') as f:
+                wiki_word_jsons = ujson.load(f)
+            words = wiki_word_jsons['words']
+            sentences = [] + scrap_sentences
 
-        text = ''
+            text = ''
 
-        for word in words:
-            if len(text + word) < length-2:
-                text += word
-            else:
-                sentences.append(text)
-                text = ''
+            for word in words:
+                if len(text + word) < length-2:
+                    text += word
+                else:
+                    sentences.append(text)
+                    text = ''
 
-        for i in range(0, len(sentences), batch_size):
-            batch_x = sentences[i:i+batch_size]
-            batch_y = [adversarial(s) for s in batch_x]
+            for i in range(0, len(sentences), batch_size):
+                original_sentences = sentences[i:i+batch_size]
+                adversarial_sentences = [
+                    adversarial(s) for s in original_sentences]
 
-            batch_x = np.array([tokenize(s+' '*(length - len(s)))
-                                for s in batch_x])
-            batch_y = np.array([tokenize(s+' '*(length - len(s)))
-                                for s in batch_y])
+                original_sentences = np.array([tokenize(s+' '*(length - len(s)))
+                                            for s in original_sentences])
+                adversarial_sentences = np.array([tokenize(s+' '*(length - len(s)))
+                                                for s in adversarial_sentences])
 
-            yield np.array([to_categorical(s, NUM_VOCAB) for s in batch_x]), np.array([to_categorical(s, NUM_VOCAB) for s in batch_y])
-        scrap_sentences = sentences[i:]
+                original_sentences = np.array(
+                    [to_categorical(s, NUM_VOCAB) for s in original_sentences])
+                adversarial_sentences = np.array(
+                    [to_categorical(s, NUM_VOCAB) for s in adversarial_sentences])
+                yield adversarial_sentences, original_sentences
+            scrap_sentences = sentences[i:]
 
 
 # %%
